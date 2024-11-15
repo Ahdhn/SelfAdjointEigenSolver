@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
 #Project name 
-set(project_name "CUDATemplate")#<TODO> change this to the name of your project 
+set(project_name "SelfAdjoint")#<TODO> change this to the name of your project 
 project(${project_name} LANGUAGES CXX C CUDA)  
 
 #toggle between building a shared or static library
@@ -15,18 +15,6 @@ endif ()
 
 # Direct all output to /bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-
-
-include(FetchContent)
-# GoogleTest
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_Declare(googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        eaf9a3fd77869cf95befb87455a2e2a2e85044ff
-)
-FetchContent_MakeAvailable(googletest)
-include(GoogleTest)
-
 
 # Auto-detect GPU architecture
 include("cmake/AutoDetectCudaArch.cmake")
@@ -62,13 +50,16 @@ target_include_directories(developer_flags INTERFACE ${CMAKE_CUDA_TOOLKIT_INCLUD
 
 target_compile_features(developer_flags INTERFACE cxx_std_17)
 
+include("cmake/eigen.cmake")
+target_link_libraries(developer_flags INTERFACE Eigen3::Eigen)
+# https://eigen.tuxfamily.org/dox/TopicCUDA.html
+target_compile_definitions(developer_flags INTERFACE "EIGEN_DEFAULT_DENSE_INDEX_TYPE=int")
+
+
 #OpenMP
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(developer_flags INTERFACE OpenMP::OpenMP_CXX)
 endif()
 
-enable_testing()
-
-add_subdirectory(CUDALib)
-add_subdirectory(CUDAExec)
+add_subdirectory(SelfAdjoint)
